@@ -1,150 +1,215 @@
-# 🎬 CineMatch AI — Global Movie Discovery Platform & Hybrid Recommendation Engine
+# 🎬 CineMatch AI — Intelligent Global Movie Companion & Hybrid Discovery Engine
 
-[![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/)
-[![Streamlit](https://img.shields.io/badge/Streamlit-1.30+-red.svg)](https://streamlit.io/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688.svg)](https://fastapi.tiangolo.com/)
-[![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.3+-orange.svg)](https://scikit-learn.org/)
-[![SQLite](https://img.shields.io/badge/Database-SQLite%203-003B57.svg)](https://www.sqlite.org/)
-[![TMDB](https://img.shields.io/badge/API-TMDB-01b4e4.svg)](https://www.themoviedb.org/)
-[![Groq](https://img.shields.io/badge/LLM-Groq%20AI-f55036.svg)](https://groq.com/)
+<div align="center">
 
-**CineMatch AI** is an enterprise-grade, mood-aware, explainable AI global movie recommendation and discovery platform. It combines **Two-Tier AI Intent Parsing + Deterministic Grounded Retrieval (No Hallucinations)**, **5-Factor Hybrid ML Ranking**, **TMDB Worldwide Catalog Integration**, **Cross-Language Global AI Twins**, **Movie DNA Profiling**, **Closed-Loop Feedback Learning**, **FastAPI REST Endpoints**, and a **Multi-Movie Group Scheduler**.
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://cinematch-global.streamlit.app)
+[![Python](https://img.shields.io/badge/Python-3.9+-3776AB.svg?style=flat&logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688.svg?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.3+-F7931E.svg?style=flat&logo=scikitlearn&logoColor=white)](https://scikit-learn.org/)
+[![PyArrow](https://img.shields.io/badge/PyArrow-Parquet-FFD43B.svg?style=flat&logo=apache&logoColor=black)](https://arrow.apache.org/)
+[![SQLite](https://img.shields.io/badge/SQLite-3.0+-003B57.svg?style=flat&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![TMDB API](https://img.shields.io/badge/TMDB-API_v3-01B4E4.svg?style=flat&logo=themoviedatabase&logoColor=white)](https://www.themoviedb.org/)
+[![Groq AI](https://img.shields.io/badge/Groq-LLaMA_3.3_70B-F55036.svg?style=flat)](https://groq.com/)
+
+**Enterprise-grade, mood-aware, explainable AI movie discovery platform powering 60,780+ global & Indian cinema titles across 53 languages.**
+
+[🌐 **Live Demo**](https://cinematch-global.streamlit.app) • [📖 **Documentation**](#-system-architecture) • [🚀 **Quickstart**](#-local-installation--quickstart) • [✨ **Features**](#-key-capabilities)
+
+</div>
 
 ---
 
-## 📌 Complete System Architecture
+## 🌟 Overview
+
+**CineMatch AI** is a next-generation recommendation engine engineered to bridge the gap between deterministic machine learning precision and modern generative AI. It solves the traditional *"black-box"* recommendation problem through **Explainable Knowledge Graph Traversal**, **Deep Movie DNA Profiling**, **Two-Tier Grounded Retrieval (Zero Hallucinations)**, and **5-Factor Hybrid ML Ranking**.
+
+Whether you're looking for Kannada cult blockbusters (*KGF*, *Kantara*, *Ulidavaru Kandanthe*), Korean thrillers (*Parasite*, *Memories of Murder*), Tamil cinematic universes (*Vikram*, *Leo*, *Kaithi*), or Hollywood sci-fi epics (*Interstellar*, *Dune*, *Oppenheimer*), CineMatch intelligently connects cinematic DNA across borders.
+
+---
+
+## 📌 System Architecture
 
 ```text
-                         👤 USER NATURAL LANGUAGE QUERY
-                                       │
-                                       ↓
-                        🤖 CINEMATCH AI STUDIO (NLU)
-                        (Intent Extraction & Context Memory)
-                                       │
-            ┌──────────────────────────┼──────────────────────────┐
-            ↓                          ↓                          ↓
-    Genre & Tropes               Mood & Emotion            Country & Language
-  (e.g., Thriller, Sci-Fi)     (e.g., Mind-Blown, Chill)    (e.g., Korean, Kannada)
-            ↓                          ↓                          ↓
-    Negative Filters             Runtime Budget             Consensus Rating
-   (Exclude: Horror)            (e.g., < 120 min)          (Rating >= 7.0)
-            └──────────────────────────┼──────────────────────────┘
-                                       │
-                            🔎 GROUNDED RETRIEVAL
-                           /                       \
-                          /                         \
-                TMDB Worldwide API            Local Movie Catalog
-                 (100,000+ Titles)              (movies.pkl)
-                          \                         /
-                           \                       /
-                            ↓                     ↓
-                             CANDIDATE MOVIE POOL
-                                       │
-                                       ↓
-                             🧬 DEEP MOVIE DNA
-                     (Pacing, Intensity, Complexity, Themes)
-                                       │
-                                       ↓
-                           5-FACTOR HYBRID ML ENGINE
-          ┌────────────────────────────┼────────────────────────────┐
-          ↓ (40%)                      ↓ (20%)                      ↓ (20%)
-    Content Similarity                Movie DNA                   User Taste
-    (Cosine Vector Matrix)        (Thematic Depth)             (Learned Vector)
-          │                            │                            │
-          └────────────────────────────┼────────────────────────────┘
-                                       │ (10% Mood + 10% Rating)
-                                       ↓
-                               FINAL TOP-K RANKING
-                                       │
-                                       ↓
-                           🤖 FACTUAL AI EXPLANATION
-                     (Grounded on Real Retrieved Evidence)
-                                       │
-                                       ↓
-                            🎬 USER RECOMMENDATIONS
-                                       │
-                                       ↓
-                             👍 USER FEEDBACK LOOP
-                       (Records in SQLite / Re-ranks Taste)
+                             👤 USER QUERY / VIBE / SEED MOVIE
+                                             │
+                                             ↓
+                         🤖 TWO-TIER NLU & GROQ INTENT PARSER
+                           (LLaMA 3.3 70B Structured Filtering)
+                                             │
+             ┌───────────────────────────────┼───────────────────────────────┐
+             ↓                               ↓                               ↓
+      Genres & Tropes                 Mood & Energy                    Language/Region
+    (e.g., Sci-Fi, Heist)       (e.g., Mind-Blown, Chill)         (53 Multi-Lingual Codes)
+             ↓                               ↓                               ↓
+      Negative Filters                 Runtime Budget                 Consensus Filter
+    (e.g., Exclude Horror)           (e.g., < 130 mins)             (Vote Average >= 7.0)
+             └───────────────────────────────┼───────────────────────────────┘
+                                             │
+                                  🔎 GROUNDED RETRIEVAL POOL
+                                  /                       \
+                                 /                         \
+                      TMDB 100k API                Unified 60k Global Catalog
+                   (Live Posters/Trailers)          (movies.pkl / Parquet)
+                                 \                         /
+                                  \                       /
+                                   ↓                     ↓
+                                    CANDIDATE MOVIE SET
+                                             │
+                                             ↓
+                                   🧬 DEEP MOVIE DNA
+                           (Pacing, Intensity, Complexity, Mood)
+                                             │
+                                             ↓
+                            ⚡ 5-FACTOR HYBRID ML RANKING
+             ┌───────────────────────────────┼───────────────────────────────┐
+             ↓ (35%)                         ↓ (25%)                         ↓ (20%)
+       TF-IDF Cosine Graph             Knowledge Graph              Learned Taste Vector
+     (40k Bi-Gram Features)         (60k Nodes / 114k Edges)          (User Preference)
+             │                               │                               │
+             └───────────────────────────────┼───────────────────────────────┘
+                                             │ (10% Mood Alignment + 10% TMDB Consensus)
+                                             ↓
+                                    FINAL TOP-K RANKING
+                                             │
+                                             ↓
+                                🕸️ EXPLAINABLE AI EVIDENCE
+                          (Direct Graph Paths & Factual Why Cards)
+                                             │
+                                             ↓
+                                  🎬 STREAMLIT PRODUCTION UI
+                                             │
+                                             ↓
+                                   👍 CLOSED-LOOP MLOPS
+                           (SQLite Feedback & Dynamic Re-ranking)
 ```
 
 ---
 
-## 🏆 Development Phases (1 through 11)
+## ✨ Key Capabilities
 
-| Phase | Milestone | Features & Implementation |
-|---|---|---|
-| **Phase 1** | **Production UI & TMDB** | Real posters, backdrops, YouTube trailer modals, DNS fallback resilience, and responsive cards. |
-| **Phase 2** | **Personalization & Taste** | User Taste Vector, persistent favorites/watchlist, 5-star ratings, and Hidden Gems detection. |
-| **Phase 3** | **World Cinema & Discovery** | Global cinema explorer across 17+ languages (Kannada, Hindi, Korean, Japanese, French, Spanish, etc.). |
-| **Phase 4** | **Cross-Language AI Twins** | Recommends international equivalents matching any movie's psychological and thematic DNA. |
-| **Phase 5** | **Deep Movie DNA Profiler** | Evaluates Genre structure, Mood & Vibe, Pacing, Story Complexity, Visuals, and Core Themes. |
-| **Phase 6** | **Dedicated Mood Mode** | 9-state emotional recommender (*😊 Happy, 😢 Emotional, 🔥 Excited, 🧠 Thoughtful, ❤️ Romantic, 😱 Scared, 😌 Relaxed, 🚀 Adventurous, 😂 Funny*). |
-| **Phase 7** | **AI Movie Assistant** | Multi-turn conversational companion with memory refinement and Kannada/Hindi/English NLP. |
-| **Phase 8** | **Build My Movie Night** | Multi-movie group planner with 8 theme modes (*😂 Laugh, ❤️ Couple, 🔥 Thriller, 🧠 Brainy, etc.*) and total runtime calculation. |
-| **Phase 9** | **Recommendation Evaluation** | Industrial evaluation suite calculating **Precision@K**, **Recall@K**, **NDCG@K**, **MAP@K**, **Catalog Coverage (64.2%)**, and **Diversity (0.730)**. |
-| **Phase 10** | **Production REST Backend** | Standalone FastAPI backend (`api.py`) exposing auth, discovery, hybrid scoring, collections, and analytics endpoints. |
-| **Phase 11** | **CineMatch AI Studio** | Natural Language Intent Extractor $\to$ Structured Filters $\to$ Grounded Retrieval $\to$ Hybrid ML $\to$ Evidence Explanations (Zero Hallucinations). |
-| **Phase 12** | **Continuous Feedback MLOps** | Persistent SQLite DB learning loop, rating recalibration, and real-time taste vector re-ranking. |
-| **Phase 13** | **Data & ML Infrastructure** | Automated Data Quality Audit, Two-Stage Candidate Retrieval, Model Version Registry (v1–v4), Experiment Tracking, and PSI Drift Monitoring. |
-| **Phase 14** | **CineMatch 2.0 Product & UX** | Netflix/Letterboxd Personalized Feed, Head-to-Head Movie Comparison, Curated & Custom Collections, and Gamification Achievement Badges. |
-| **Phase 15** | **Intelligence 2.0: Knowledge Graph** | Heterogeneous Movie Knowledge Graph (4,930+ nodes, 13,590+ edges), BFS Multi-Hop Path Finder, Ego-Network Mermaid Visualizer, Entity Filmography, and Relational Explainable AI. |
+### 1. 🌐 Unified 60,780+ Multi-Source Global Catalog
+Fused from 5 rich datasets:
+- **TMDB 5000 Movies & Credits** (Hollywood & International masterworks)
+- **Netflix Global Streaming Catalog**
+- **Amazon Prime Video Catalog**
+- **Disney+ Hotstar Catalog**
+- **The 50,602 Indian Cinema Database** (Kannada, Hindi, Telugu, Tamil, Malayalam, Bengali, Marathi, Punjabi, etc.)
+- **Curated Modern Landmark Blockbusters (2014–2026)**
+
+### 2. 🕸️ Movie Knowledge Graph Engine (Phase 15)
+- **60,920 nodes & 114,849 multi-hop relational edges**.
+- Multi-hop graph traversal (BFS / Shortest Paths) linking Directors, Actors, Genres, Themes, and Cinematic Universes (e.g., *Lokesh Cinematic Universe (LCU)*, *Nolan Sci-Fi*, *Prashanth Neel Universe*).
+- **Factual "Why This Movie?" Evidence Cards** explaining exact director, actor, and narrative connections without AI hallucinations.
+
+### 3. 🧠 Two-Tier AI Studio (Groq LLaMA 3.3 70B)
+- Parses natural language prompts into structured JSON search criteria.
+- Multilingual conversational query support across English, Kannada, Hindi, and Hinglish.
+
+### 4. 🧬 Deep Movie DNA & Psychological Profiling
+- Profiles every title across 6 fundamental axes: **Genre Composition**, **Mood & Emotional Resonance**, **Narrative Pacing**, **Story Complexity**, **Visual Aesthetic**, and **Core Thematic Tropes**.
+
+### 5. 🌍 Cross-Language AI Twins
+- Discovers international cinematic equivalents matching the narrative and psychological DNA of any chosen movie (e.g., matching *Tumbbad* to gothic atmospheric horrors, or *Kantara* to global folklore mysteries).
+
+### 6. 🌈 9 Dedicated Mood Modes
+Instant emotional alignment:
+- 😊 **Happy & Uplifting** • 😢 **Emotional & Cathartic** • 🔥 **High Adrenaline**
+- 🧠 **Mind-Bending & Thoughtful** • ❤️ **Romantic & Heartfelt** • 😱 **Chilling & Scary**
+- 😌 **Relaxed & Cozy** • 🚀 **Epic & Adventurous** • 😂 **Witty & Fun**
+
+### 7. 🍿 Build My Movie Night Group Planner
+- Curates seamless double/triple feature marathon line-ups based on runtime budgets and group vibes.
+
+### 8. 📊 Industrial Evaluation Suite & Feedback Loop
+- Computes **Precision@K**, **Recall@K**, **NDCG@K**, **MAP@K**, **Catalog Coverage (64.2%)**, and **Diversity (0.730)**.
+- Persistent SQLite learning loop dynamically updating user taste vectors upon thumbs up/down feedback.
 
 ---
 
 ## 📁 Repository Structure
 
 ```text
-movie-recommender-system/
-├── app.py                  # Main Streamlit web application & AI platform
-├── api.py                  # Production FastAPI REST Backend service
-├── knowledge_graph.py      # Heterogeneous Movie Knowledge Graph engine & path traversals
-├── ml_pipeline.py          # Data ingestion audit, Two-Stage retrieval, Model Registry & Drift monitor
-├── main.py                 # ML training pipeline, vectorization & CLI tester
-├── db.py                   # Persistent SQLite database layer & CRUD operations
-
-├── cinematch.db            # SQLite database file
-├── movies.pkl              # Processed movies DataFrame (4,800+ titles)
-├── top_similarity.pkl      # Lightweight top-50 similarity mapping (~3.2 MB)
-├── similarity.pkl          # Full similarity matrix
-├── requirements.txt        # Python package dependencies (Streamlit, FastAPI, etc.)
-├── application_image.png   # Application preview screenshot
-├── .gitignore              # Git ignore rules for venv, cache, and secrets
-├── .streamlit/             # Secrets configuration directory
-│   └── secrets.toml
-└── README.md               # Complete project documentation
+movie_recommendation-system/
+├── app.py                             # Main Streamlit Web Application & UI
+├── knowledge_graph.py                 # Heterogeneous Knowledge Graph & BFS Multi-Hop Engine
+├── db.py                              # SQLite Continuous Learning Loop & User Taste Persistence
+├── fuse_all_catalogs.py               # Grand Multi-Source Dataset Fusion & Feature Pipeline
+├── movies.pkl                         # 60,780-Movie Fast DataFrame (Runtime Catalog)
+├── top_similarity.pkl                 # 40,000-Feature Bi-Gram TF-IDF Nearest-Neighbors Graph
+├── cinematch_global_movies.parquet    # PyArrow Columnar Movie Storage
+├── movie_dict.pkl                     # Lightweight Fast Title Index Fallback
+├── api.py                             # Production FastAPI REST Backend Service
+├── requirements.txt                   # Deployment Dependencies
+├── .gitignore                         # Secure Token & Large Matrix Exclusions
+└── README.md                          # Comprehensive Documentation
 ```
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Local Installation & Quickstart
 
-### 1. Clone & Install
+### 1. Clone the Repository
 ```bash
 git clone https://github.com/shrishailad24/movie_recommendation-system.git
 cd movie_recommendation-system
+```
+
+### 2. Create and Activate Virtual Environment
+```bash
+# Windows
+python -m venv .venv
+.venv\Scripts\activate
+
+# Linux / macOS
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+### 3. Install Dependencies
+```bash
 pip install -r requirements.txt
 ```
 
-### 2. Configure Secrets (`.streamlit/secrets.toml`)
+### 4. Configure API Keys (Optional but Recommended)
+Create `.streamlit/secrets.toml`:
 ```toml
-TMDB_API_KEY = "YOUR_TMDB_API_KEY"
-GROQ_API_KEY = "YOUR_GROQ_API_KEY"
+TMDB_API_KEY = "your_tmdb_api_key"
+GROQ_API_KEY = "your_groq_api_key"
 ```
 
-### 3. Run the Streamlit Interactive Platform
+### 5. Launch Application
 ```bash
 streamlit run app.py
 ```
-Open your browser at `http://localhost:8501`.
-
-### 4. Run the FastAPI REST Backend
-```bash
-python -m uvicorn api:app --reload --port 8000
-```
-Explore interactive Swagger documentation at `http://localhost:8000/docs`.
+Open **`http://localhost:8501`** in your browser.
 
 ---
 
-## 📜 License
-Distributed under the MIT License.
+## ☁️ Streamlit Community Cloud Deployment
+
+1. Fork or push this repository to your GitHub account (`shrishailad24/movie_recommendation-system`).
+2. Visit **[Streamlit Community Cloud](https://share.streamlit.io/)**.
+3. Select **Create app** $\to$ **"Yup, I have an app"**:
+   - **Repository**: `shrishailad24/movie_recommendation-system`
+   - **Branch**: `main`
+   - **Main file**: `app.py`
+4. Under **Advanced settings** $\to$ **Secrets**, configure:
+   ```toml
+   TMDB_API_KEY = "your_tmdb_api_key"
+   GROQ_API_KEY = "your_groq_api_key"
+   ```
+5. Click **Deploy**! 🎈
+
+---
+
+## 👨‍💻 Author & Maintainer
+
+**Shrishail M Hebballi**  
+*AI & Data Science Engineer*  
+- **GitHub**: [@shrishailad24](https://github.com/shrishailad24)
+- **Live Platform**: [cinematch-global.streamlit.app](https://cinematch-global.streamlit.app)
+
+---
+
+## 📄 License
+This project is open source and available under the [MIT License](LICENSE).

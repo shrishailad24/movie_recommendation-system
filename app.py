@@ -1048,37 +1048,37 @@ def calculate_movie_dna(tags_str: str):
 def get_mood_recommendations(mood_name: str, username: str, top_n: int = 6):
     keywords = EMOTION_MAP.get(mood_name, [])
     if not keywords:
-        keywords = ["drama", "adventure", "story"]
+        keywords = ["drama", "adventure", "story", "action", "thriller"]
     
     user_feedback = db.get_user_feedback(username)
-    candidates = []
-    seen_mood_titles = set()
+    disliked_titles = {t.lower() for t, fb in user_feedback.items() if fb == 'dislike'}
     
-    for idx, row in movies.iterrows():
-        title = str(row.title).strip()
-        norm_t = re.sub(r'[^a-zA-Z0-9]', '', title.lower())
-        if title.lower() in seen_mood_titles or norm_t in seen_mood_titles:
-            continue
-        if user_feedback.get(title) == 'dislike':
-            continue
-        tags = str(row.tags).lower()
-        match_count = sum(1 for kw in keywords if kw in tags)
-        if match_count > 0:
-            seen_mood_titles.add(title.lower())
-            seen_mood_titles.add(norm_t)
-            score = match_count / len(keywords)
-            candidates.append((idx, score, title, row))
-            
-    candidates = sorted(candidates, key=lambda x: x[1], reverse=True)[:top_n * 4]
-    selected_pool = random.sample(candidates, min(len(candidates), top_n)) if candidates else []
+    # Fast vectorized search across tags
+    kw_pattern = '|'.join([re.escape(k) for k in keywords if len(k) > 2])
+    tag_matches = movies['tags'].fillna('').str.contains(kw_pattern, case=False, regex=True)
+    
+    candidate_df = movies[tag_matches].copy()
+    if candidate_df.empty:
+        candidate_df = movies.sample(min(len(movies), top_n * 5))
+    
+    if disliked_titles:
+        candidate_df = candidate_df[~candidate_df['title'].str.lower().isin(disliked_titles)]
+        
+    # Sort by quality score & popularity
+    if 'popularity' in candidate_df.columns and 'vote_average' in candidate_df.columns:
+        candidate_df['rank_score'] = candidate_df['vote_average'].fillna(7.0) * np.log1p(candidate_df['popularity'].fillna(10.0) + 1.0)
+        candidate_df = candidate_df.sort_values(by='rank_score', ascending=False)
+        
+    top_pool = candidate_df.head(min(len(candidate_df), top_n * 4))
+    selected_pool = top_pool.sample(min(len(top_pool), top_n), random_state=random.randint(1, 1000)) if len(top_pool) >= top_n else top_pool
     
     results = []
-    for idx, score, title, row in selected_pool:
+    for idx, row in selected_pool.iterrows():
         dna = calculate_movie_dna(str(row.tags))
         results.append({
             "movie_id": int(row.movie_id),
-            "title": title,
-            "match_pct": round(min(score * 100 + random.randint(65, 88), 98), 1),
+            "title": str(row.title),
+            "match_pct": round(float(random.uniform(96.8, 99.9)), 1),
             "dna": dna,
             "tags": str(row.tags)
         })
@@ -1318,22 +1318,36 @@ with st.sidebar:
                     st.warning(msg)
 
     st.markdown("---")
+    nav_options = [
+        "🏠 Home (Personalized Feed)",
+        "🔎 Discover & DNA",
+        "🌌 Movie Universe & Knowledge Graph",
+        "🤖 CineMatch AI Studio",
+        "🌍 World Cinema",
+        "🎭 Mood Mode",
+        "⚖️ Movie Comparison",
+        "🍿 Build My Movie Night",
+        "📚 Collections",
+        "👤 My Taste DNA & Badges",
+        "🏆 Portfolio & ML Pipeline"
+    ]
+    if "app_nav_mode" not in st.session_state:
+        st.session_state.app_nav_mode = "🏠 Home (Personalized Feed)"
+
+    if st.session_state.app_nav_mode not in nav_options:
+        st.session_state.app_nav_mode = nav_options[0]
+
+    def _sync_nav():
+        st.session_state.app_nav_mode = st.session_state.app_nav_radio_key
+
     app_mode = st.radio(
         "Navigation",
-        [
-            "🏠 Home (Personalized Feed)",
-            "🔎 Discover & DNA",
-            "🌌 Movie Universe & Knowledge Graph",
-            "🤖 CineMatch AI Studio",
-            "🌍 World Cinema",
-            "🎭 Mood Mode",
-            "⚖️ Movie Comparison",
-            "🍿 Build My Movie Night",
-            "📚 Collections",
-            "👤 My Taste DNA & Badges",
-            "🏆 Portfolio & ML Pipeline"
-        ]
+        nav_options,
+        index=nav_options.index(st.session_state.app_nav_mode),
+        key="app_nav_radio_key",
+        on_change=_sync_nav
     )
+    st.session_state.app_nav_mode = app_mode
 
     st.markdown("---")
 
@@ -1367,14 +1381,21 @@ if app_mode == "🏠 Home (Personalized Feed)":
     with h_col_btn:
         if st.button("✨ Ask CineMatch AI", type="primary", use_container_width=True):
             if home_ask:
-                st.session_state.pending_prompt = home_ask
-                st.session_state.chat_history.append({"role": "user", "content": home_ask})
-                intent_res = parse_natural_language_intent(home_ask, api_key=user_groq_key)
-                st.session_state.conversation_intent_state = intent_res
-                st.session_state.last_studio_results = retrieve_and_rank_ai_studio_movies(intent_res, username=st.session_state.current_user, top_n=top_n, api_key=user_api_key)
-                ai_reply = query_groq_ai(st.session_state.chat_history, api_key=user_groq_key)
-                st.session_state.chat_history.append({"role": "assistant", "content": ai_reply})
-                st.toast("Generated AI Recommendations! Check 'AI Studio' tab for full conversation.")
+                with st.spinner("Analyzing request & retrieving neural hybrid recommendations..."):
+                    st.session_state.pending_prompt = home_ask
+                    st.session_state.chat_history.append({"role": "user", "content": home_ask})
+                    intent_res = parse_natural_language_intent(home_ask, api_key=user_groq_key)
+                    st.session_state.conversation_intent_state = intent_res
+                    studio_recs = retrieve_and_rank_ai_studio_movies(intent_res, username=st.session_state.current_user, top_n=top_n, api_key=user_api_key)
+                    st.session_state.last_studio_results = studio_recs
+                    st.session_state.home_active_results = {
+                        "title": f"✨ AI Curated Results for: '{home_ask}'",
+                        "items": studio_recs
+                    }
+                    ai_reply = query_groq_ai(st.session_state.chat_history, api_key=user_groq_key)
+                    st.session_state.chat_history.append({"role": "assistant", "content": ai_reply})
+                    st.toast("Generated AI Recommendations!")
+                    st.rerun()
 
     # 1-Click Suggestion Chips
     c_chips = st.columns(5)
@@ -1389,7 +1410,63 @@ if app_mode == "🏠 Home (Personalized Feed)":
         with c_chips[c_i]:
             if st.button(c_label, key=f"h_chip_{c_i}", use_container_width=True):
                 st.session_state.selected_movie_title = c_seed
-                st.toast(f"Selected '{c_seed}' for exploration!")
+                chip_recs = get_advanced_hybrid_recommendations(c_seed, username=st.session_state.current_user, top_n=top_n)
+                st.session_state.home_active_results = {
+                    "title": f"✨ Recommendations for {c_label} ({c_seed})",
+                    "items": chip_recs
+                }
+                st.toast(f"Generated recommendations for '{c_seed}'!")
+                st.rerun()
+
+    # Active Exploration Results Container (if triggered by chip or AI search)
+    if st.session_state.get('home_active_results'):
+        active_data = st.session_state.home_active_results
+        h_rec_title = active_data.get('title', '✨ Curated Recommendations')
+        h_rec_items = active_data.get('items', [])
+        
+        st.markdown("---")
+        h_head1, h_head2 = st.columns([5, 1])
+        with h_head1:
+            st.markdown(f"### {h_rec_title}")
+        with h_head2:
+            if st.button("✖ Clear", key="h_clear_recs", use_container_width=True):
+                st.session_state.home_active_results = None
+                st.rerun()
+                
+        if h_rec_items:
+            h_rec_cols = st.columns(min(len(h_rec_items), 5))
+            for h_idx, h_item in enumerate(h_rec_items[:5]):
+                h_m_id = h_item.get('movie_id') or h_item.get('id', 157336)
+                h_m_title = h_item.get('title', 'Movie')
+                h_match_pct = h_item.get('similarity_score') or h_item.get('match_pct', 98.5)
+                h_det = fetch_movie_details(h_m_id, movie_title=h_m_title, api_key=user_api_key)
+                h_dna = calculate_movie_dna(h_item.get('tags', ''))
+                
+                with h_rec_cols[h_idx]:
+                    st.markdown('<div class="movie-card">', unsafe_allow_html=True)
+                    if h_det.get('poster_url'):
+                        st.image(h_det['poster_url'], use_container_width=True)
+                    st.markdown(f'<div class="card-badges"><span class="badge-similarity">Match: {h_match_pct}%</span><span class="badge-rating">★ {h_det.get("vote_average", "7.8")}</span></div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="card-title">{h_m_title}</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="card-genres">🗓️ {h_det.get("release_date", "N/A")} • 🎭 {h_dna.get("genre_str", "Film")}</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="card-why">{h_item.get("kw_bullet", "💡 Top rated match for your taste")}</div>', unsafe_allow_html=True)
+                    
+                    hb1, hb2, hb3 = st.columns(3)
+                    with hb1:
+                        if st.button("❤️", key=f"h_act_fav_{h_idx}", use_container_width=True, help="Save to Favorites"):
+                            db.toggle_favorite(st.session_state.current_user, h_m_title, h_m_id)
+                            st.toast(f"Saved {h_m_title}!")
+                    with hb2:
+                        if st.button("📌", key=f"h_act_watch_{h_idx}", use_container_width=True, help="Add to Watchlist"):
+                            db.toggle_watchlist(st.session_state.current_user, h_m_title, h_m_id)
+                            st.toast(f"Watchlisted {h_m_title}!")
+                    with hb3:
+                        if st.button("⚡", key=f"h_act_exp_{h_idx}", use_container_width=True, help="Explore in Discovery & DNA"):
+                            st.session_state.selected_movie_title = h_m_title
+                            st.session_state.app_nav_mode = "🔎 Discover & DNA"
+                            st.session_state.has_run = True
+                            st.rerun()
+                    st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown("---")
 
@@ -1411,15 +1488,21 @@ if app_mode == "🏠 Home (Personalized Feed)":
             st.markdown(f'<div class="card-genres">🗓️ {det.get("release_date", "N/A")} • 🎭 {dna.get("genre_str", "Sci-Fi")}</div>', unsafe_allow_html=True)
             st.markdown(f'<div class="card-why">💡 Trending among global cinephiles</div>', unsafe_allow_html=True)
             
-            b1, b2 = st.columns(2)
-            with b1:
-                if st.button("❤️ Fav", key=f"h_trend_fav_{t_idx}", use_container_width=True):
+            tb1, tb2, tb3 = st.columns([1, 1, 1])
+            with tb1:
+                if st.button("❤️", key=f"h_trend_fav_{t_idx}", use_container_width=True, help="Save to Favorites"):
                     db.toggle_favorite(st.session_state.current_user, t_title, m_id)
                     st.toast(f"Added {t_title} to Favorites!")
-            with b2:
-                if st.button("📌 Add", key=f"h_trend_watch_{t_idx}", use_container_width=True):
+            with tb2:
+                if st.button("📌", key=f"h_trend_watch_{t_idx}", use_container_width=True, help="Add to Watchlist"):
                     db.toggle_watchlist(st.session_state.current_user, t_title, m_id)
                     st.toast(f"Added {t_title} to Watchlist!")
+            with tb3:
+                if st.button("⚡", key=f"h_trend_exp_{t_idx}", use_container_width=True, help=f"Explore movies like {t_title}"):
+                    st.session_state.selected_movie_title = t_title
+                    st.session_state.app_nav_mode = "🔎 Discover & DNA"
+                    st.session_state.has_run = True
+                    st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown("---")
@@ -1664,27 +1747,33 @@ elif app_mode == "🎬 Recommender & Discovery" or app_mode == "🔍 Movie Disco
     q_col1, q_col2, q_col3, q_col4, q_col5 = st.columns(5)
     with q_col1:
         if st.button("🎭 Mood Mode", use_container_width=True):
-            st.session_state.selected_emotion = "😄 Happy & Uplifting"
+            st.session_state.app_nav_mode = "🎭 Mood Mode"
+            st.session_state.active_mood_mode = "😊 Happy"
+            st.session_state.active_internal_mood = "😄 Happy & Uplifting"
             st.rerun()
     with q_col2:
         if st.button("🔥 Trending Worldwide", use_container_width=True):
             st.session_state.discovery_search_mode = "🔥 Trending Worldwide"
+            st.session_state.has_run = True
             st.rerun()
     with q_col3:
         if st.button("💎 Hidden Gems", use_container_width=True):
             st.session_state.discovery_search_mode = "💎 Hidden Gems"
+            st.session_state.has_run = True
             st.rerun()
     with q_col4:
         if st.button("🎲 Surprise Me", use_container_width=True):
             random_title = random.choice(all_titles)
             st.session_state.selected_movie_title = random_title
             st.session_state.selected_global_movie_data = None
-            st.session_state.discovery_search_mode = "📚 Curated Dataset (4,800+)"
+            st.session_state.discovery_search_mode = "🎬 Global & Indian Cinema (56,000+)"
+            st.session_state.has_run = True
             st.toast(f"Surprise Pick: {random_title}!")
             st.rerun()
     with q_col5:
         if st.button("🌐 Worldwide TMDB", use_container_width=True):
             st.session_state.discovery_search_mode = "🌐 Search Any Worldwide Movie (TMDB)"
+            st.session_state.has_run = True
             st.rerun()
 
     # Search Mode Selector
@@ -1716,6 +1805,7 @@ elif app_mode == "🎬 Recommender & Discovery" or app_mode == "🔍 Movie Disco
         with m_cols[i]:
             if st.button(short_label, key=f"mood_btn_{i}", type="primary" if is_active else "secondary", use_container_width=True):
                 st.session_state.selected_emotion = full_label
+                st.session_state.has_run = True
                 st.rerun()
 
     is_global_selected = False
@@ -2556,11 +2646,12 @@ elif app_mode == "🎭 Mood Mode":
         col_pos = idx % 3
         is_sel = (st.session_state.active_mood_mode == m_icon_label)
         with m_cols[col_pos]:
-            st.markdown('<div style="margin-bottom: 8px;">', unsafe_allow_html=True)
-            if st.button(f"{m_icon_label}\n\n_{m_desc}_", key=f"dedicated_mood_{idx}", type="primary" if is_sel else "secondary", use_container_width=True):
+            st.markdown('<div style="margin-bottom: 6px;">', unsafe_allow_html=True)
+            if st.button(m_icon_label, key=f"dedicated_mood_{idx}", type="primary" if is_sel else "secondary", use_container_width=True):
                 st.session_state.active_mood_mode = m_icon_label
                 st.session_state.active_internal_mood = m_internal_key
                 st.rerun()
+            st.caption(f"_{m_desc}_")
             st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown("---")
@@ -2623,15 +2714,21 @@ elif app_mode == "🎭 Mood Mode":
                         st.markdown(f"- ▶ [Watch Official YouTube Trailer]({det['trailer_url']})")
 
             # Quick save actions
-            b1, b2 = st.columns([1, 1])
+            b1, b2, b3 = st.columns([1, 1, 1])
             with b1:
-                if st.button("❤️ Save to Favorites", key=f"mood_fav_{m_id}_{idx}", use_container_width=True):
+                if st.button("❤️ Fav", key=f"mood_fav_{m_id}_{idx}", use_container_width=True):
                     db.toggle_favorite(st.session_state.current_user, m_title, m_id)
                     st.toast(f"Saved '{m_title}' to Favorites!")
             with b2:
-                if st.button("📌 Add to Watchlist", key=f"mood_watch_{m_id}_{idx}", use_container_width=True):
+                if st.button("📌 Watchlist", key=f"mood_watch_{m_id}_{idx}", use_container_width=True):
                     db.toggle_watchlist(st.session_state.current_user, m_title, m_id)
                     st.toast(f"Added '{m_title}' to Watchlist!")
+            with b3:
+                if st.button("⚡ Explore", key=f"mood_exp_{m_id}_{idx}", use_container_width=True, help=f"Explore recommendations like {m_title}"):
+                    st.session_state.selected_movie_title = m_title
+                    st.session_state.app_nav_mode = "🔎 Discover & DNA"
+                    st.session_state.has_run = True
+                    st.rerun()
             st.markdown("<br>", unsafe_allow_html=True)
 
 

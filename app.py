@@ -1171,14 +1171,37 @@ def get_advanced_hybrid_recommendations(selected_title: str, username: str, top_
         emotion_kws = EMOTION_MAP.get(emotion, [])
         emotion_bonus = (sum(1 for kw in emotion_kws if kw in movie_tags) / max(len(emotion_kws), 1)) * 0.2 if emotion_kws else 0.0
 
-        # Hybrid Fusion: Content (35%) + Graph (25%) + Collab/Taste (20%) + Genre (10%) + Emotion (10%)
-        final_score = (
-            0.35 * content_score +
-            0.25 * graph_score +
-            0.20 * collab_score +
-            0.10 * genre_score +
-            0.10 * (0.5 + emotion_bonus)
-        )
+        # Bayesian Quality Score (Ratings + Popularity Credibility)
+        vote_avg = float(row.get('vote_average', 7.0)) if pd.notna(row.get('vote_average')) else 7.0
+        vote_cnt = float(row.get('vote_count', 50)) if pd.notna(row.get('vote_count')) else 50.0
+        quality_score = min((vote_avg / 10.0) * (1.0 + 0.08 * min(np.log1p(vote_cnt), 8.0)), 1.0)
+
+        # High-Precision Dynamic Adaptive Fusion:
+        if graph_score > 0.35:
+            # Strong Director / Cast / Franchise relational link
+            final_score = (
+                0.35 * content_score +
+                0.35 * graph_score +
+                0.12 * collab_score +
+                0.10 * genre_score +
+                0.08 * quality_score
+            )
+        else:
+            # Content + Collaborative + Thematic DNA balance
+            final_score = (
+                0.45 * content_score +
+                0.15 * graph_score +
+                0.18 * collab_score +
+                0.12 * genre_score +
+                0.10 * quality_score
+            )
+
+        # Apply emotion bonus if user specified emotion
+        if emotion_bonus > 0:
+            final_score += emotion_bonus * 0.05
+
+        # Display Calibrated Match Percentage (70% - 99.4%)
+        display_score = round(min(max(final_score * 135.0 + 28.0, 72.0), 99.4), 1)
 
         words = movie_tags.split()
         shared_keywords = [w for w in set(words) if w in selected_tags and len(w) > 4][:3]
@@ -1189,7 +1212,7 @@ def get_advanced_hybrid_recommendations(selected_title: str, username: str, top_
         ranked.append({
             "movie_id": int(row.movie_id),
             "title": movie_title,
-            "similarity_score": round(min(final_score * 100, 99.5), 1),
+            "similarity_score": display_score,
             "content_score": round(content_score * 100, 1),
             "graph_score": round(graph_score * 100, 1),
             "collab_score": round(collab_score * 100, 1),

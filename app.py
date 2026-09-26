@@ -11,9 +11,12 @@ import pandas as pd
 import numpy as np
 import db
 import knowledge_graph
-from ml_pipeline import NeuralMLPRanker
+from ml_pipeline import NeuralMLPRanker, GradientBoostedRanker, StackingEnsembleRanker, ReverseEngineeringEngine
 
 mlp_ranker = NeuralMLPRanker()
+gbdt_ranker = GradientBoostedRanker()
+stacking_ranker = StackingEnsembleRanker()
+reverse_engine = ReverseEngineeringEngine()
 
 # ---------------------------------------------------------
 # Network Resilience / ISP DNS Bypass for TMDB
@@ -1228,7 +1231,7 @@ def get_advanced_hybrid_recommendations(selected_title: str, username: str, top_
         if emotion_bonus > 0:
             final_score += emotion_bonus * 0.05
 
-        # 🧠 Deep Multi-Layer Perceptron (MLP) Neural Forward Pass
+        # 🧠 Deep Stacking Meta-Ensemble (MLP + GBDT + KG + TF-IDF)
         feat_tensor = np.array([
             float(content_score),
             float(graph_score),
@@ -1244,8 +1247,11 @@ def get_advanced_hybrid_recommendations(selected_title: str, username: str, top_
             float(quality_score)
         ], dtype=np.float32)
         
-        mlp_pred = float(mlp_ranker.forward(feat_tensor)[0])
-        blended_score = 0.50 * final_score + 0.50 * mlp_pred
+        ensemble_score = stacking_ranker.predict_rank_score(feat_tensor, content_score, graph_score)
+        blended_score = 0.40 * final_score + 0.60 * ensemble_score
+
+        # 🔍 Reverse Engineering & SHAP Feature Attribution
+        attribution_data = reverse_engine.attribute_recommendation(feat_tensor, selected_title, movie_title)
 
         # Display Calibrated Match Percentage (75% - 99.9%)
         display_score = round(min(max(blended_score * 140.0 + 25.0, 75.0), 99.9), 1)
@@ -1264,13 +1270,17 @@ def get_advanced_hybrid_recommendations(selected_title: str, username: str, top_
             "graph_score": round(graph_score * 100, 1),
             "collab_score": round(collab_score * 100, 1),
             "genre_score": round(min(genre_score * 100 + 20, 98), 1),
+            "mlp_score": round(float(mlp_ranker.forward(feat_tensor)[0]) * 100, 1),
+            "gbdt_score": round(float(gbdt_ranker.predict(feat_tensor)[0]) * 100, 1),
+            "attribution": attribution_data,
+            "top_driver": attribution_data.get("top_driver", "Content & Theme"),
             "complexity_score": random.randint(82, 95),
             "runtime_fit": random.randint(75, 96),
             "tags": str(row.tags),
             "genre_bullet": genre_bullet,
             "kw_bullet": kw_bullet,
             "graph_expl": graph_expl,
-            "final_score": final_score
+            "final_score": blended_score
         })
 
     ranked = sorted(ranked, key=lambda x: x['final_score'], reverse=True)[:top_n]
@@ -1970,10 +1980,18 @@ elif app_mode == "🎬 Recommender & Discovery" or app_mode == "🔍 Movie Disco
                                 st.toast("Filter penalty applied!")
 
                         # 5-Pillar Explainable AI Diagnostic Expander
-                        with st.expander("🧩 5-Pillar Explainable AI & Knowledge Graph Diagnostics"):
+                        with st.expander("🧩 Explainable AI, Neural MLP & Reverse SHAP Attribution"):
                             st.markdown(f"**WHY CINEMATCH RECOMMENDS THIS:**")
-                            st.caption(f"**Overall Hybrid Match:** `{item['similarity_score']}%` (Content: {item.get('content_score', 80)}% • Graph: {item.get('graph_score', 85)}%)")
+                            st.caption(f"**Stacking Ensemble Match:** `{item['similarity_score']}%` (MLP: {item.get('mlp_score', 99)}% • GBDT: {item.get('gbdt_score', 12)}% • Graph: {item.get('graph_score', 85)}%)")
                             
+                            st.markdown("#### 🔍 Reverse Feature Attribution (SHAP Driver):")
+                            attr_data = item.get('attribution', {})
+                            if attr_data and 'attributions' in attr_data:
+                                for att in attr_data['attributions'][:4]:
+                                    st.write(f"• **{att['feature']}:** `+{att['importance_pct']}% impact`")
+                            else:
+                                st.write(f"• **Primary Catalyst:** `{item.get('top_driver', 'Narrative DNA & Entity Continuity')}`")
+
                             st.markdown("#### 🕸️ Relational Knowledge Graph Evidence:")
                             for g_bullet in item.get('graph_expl', []):
                                 st.markdown(f"- {g_bullet}")

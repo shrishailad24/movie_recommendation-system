@@ -1737,14 +1737,65 @@ elif app_mode == "🎬 Recommender & Discovery" or app_mode == "🔍 Movie Disco
         st.session_state.selected_emotion = "🌟 Any Emotion"
     if 'discovery_search_mode' not in st.session_state:
         st.session_state.discovery_search_mode = "📚 Curated Dataset (4,800+)"
-    if 'selected_global_movie_data' not in st.session_state:
-        st.session_state.selected_global_movie_data = None
+    # ---------------------------------------------------------
+    # Quick Action Discovery Bar ("What do you want to explore?")
+    # ---------------------------------------------------------
+    st.markdown("#### ⚡ What do you want to explore?")
+    q_col1, q_col2, q_col3, q_col4, q_col5 = st.columns(5)
+    with q_col1:
+        if st.button("🎭 Mood Mode", key="quick_act_mood", use_container_width=True):
+            st.session_state.app_nav_radio_key = "🎭 Mood Mode"
+            st.session_state.app_nav_mode = "🎭 Mood Mode"
+            st.session_state.active_mood_mode = "😊 Happy"
+            st.session_state.active_internal_mood = "😄 Happy & Uplifting"
+            st.rerun()
+    with q_col2:
+        if st.button("🔥 Trending Worldwide", key="quick_act_trending", use_container_width=True):
+            st.session_state.discovery_catalog_radio_key = "🔥 Trending Worldwide"
+            st.session_state.discovery_search_mode = "🔥 Trending Worldwide"
+            st.session_state.has_run = True
+            st.rerun()
+    with q_col3:
+        if st.button("💎 Hidden Gems", key="quick_act_gems", use_container_width=True):
+            st.session_state.discovery_catalog_radio_key = "💎 Hidden Gems"
+            st.session_state.discovery_search_mode = "💎 Hidden Gems"
+            st.session_state.has_run = True
+            st.rerun()
+    with q_col4:
+        if st.button("🎲 Surprise Me", key="quick_act_surprise", use_container_width=True):
+            curated_picks = ["Inception", "Interstellar", "The Dark Knight", "Parasite", "Whiplash", "Spirited Away", "KGF Chapter 2", "Kantara", "3 Idiots", "The Prestige", "Gladiator", "Coco", "Django Unchained"]
+            pool = [m for m in curated_picks if m in all_titles] or all_titles
+            random_title = random.choice(pool)
+            st.session_state.selected_movie_title = random_title
+            st.session_state.selected_global_movie_data = None
+            st.session_state.discovery_catalog_radio_key = "🎬 Global & Indian Cinema (56,000+)"
+            st.session_state.discovery_search_mode = "🎬 Global & Indian Cinema (56,000+)"
+            st.session_state.has_run = True
+            st.toast(f"🎲 Surprise Pick: {random_title}!")
+            st.rerun()
+    with q_col5:
+        if st.button("🌐 Worldwide TMDB", key="quick_act_tmdb", use_container_width=True):
+            st.session_state.discovery_catalog_radio_key = "🌐 Search Any Worldwide Movie (TMDB)"
+            st.session_state.discovery_search_mode = "🌐 Search Any Worldwide Movie (TMDB)"
+            st.session_state.has_run = True
+            st.rerun()
 
-    # Discovery Catalog Source Selector
+    # Discovery Catalog Source Selector (Synced with session state)
+    catalog_modes = ["🎬 Global & Indian Cinema (56,000+)", "🌐 Search Any Worldwide Movie (TMDB)", "🔥 Trending Worldwide", "💎 Hidden Gems"]
+    if "discovery_catalog_radio_key" not in st.session_state or st.session_state.discovery_catalog_radio_key not in catalog_modes:
+        st.session_state.discovery_catalog_radio_key = st.session_state.get("discovery_search_mode", catalog_modes[0])
+        if st.session_state.discovery_catalog_radio_key not in catalog_modes:
+            st.session_state.discovery_catalog_radio_key = catalog_modes[0]
+
+    def _sync_catalog_source():
+        st.session_state.discovery_search_mode = st.session_state.discovery_catalog_radio_key
+
     search_mode = st.radio(
         "Discovery Catalog Source:",
-        ["🎬 Global & Indian Cinema (56,000+)", "🌐 Search Any Worldwide Movie (TMDB)", "🔥 Trending Worldwide", "💎 Hidden Gems"],
-        index=["🎬 Global & Indian Cinema (56,000+)", "🌐 Search Any Worldwide Movie (TMDB)", "🔥 Trending Worldwide", "💎 Hidden Gems"].index(st.session_state.discovery_search_mode) if st.session_state.discovery_search_mode in ["🎬 Global & Indian Cinema (56,000+)", "🌐 Search Any Worldwide Movie (TMDB)", "🔥 Trending Worldwide", "💎 Hidden Gems"] else 0,
+        catalog_modes,
+        index=catalog_modes.index(st.session_state.discovery_catalog_radio_key),
+        key="discovery_catalog_radio_key",
+        on_change=_sync_catalog_source,
         horizontal=True
     )
     st.session_state.discovery_search_mode = search_mode

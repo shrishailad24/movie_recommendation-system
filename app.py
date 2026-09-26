@@ -1844,6 +1844,301 @@ elif app_mode == "🎬 Recommender & Discovery" or app_mode == "🔍 Movie Disco
     )
     st.session_state.discovery_search_mode = search_mode
 
+    # ══════════════════════════════════════════════════════════════════
+    # 🎰 CINEMA ROULETTE — Full-Page 3D Gift Opening (overrides all below)
+    # ══════════════════════════════════════════════════════════════════
+    if st.session_state.get('surprise_roulette'):
+        import streamlit.components.v1 as components
+        roulette_meta = st.session_state.surprise_roulette
+        picked_title = roulette_meta.get('title', '')
+        spin_num = st.session_state.get('roulette_spin_count', 1)
+
+        # Fetch movie details for poster
+        match_row = movies[movies['title'] == picked_title]
+        r_movie_id = int(match_row.iloc[0]['movie_id']) if not match_row.empty else 157336
+        r_det = fetch_movie_details(r_movie_id, movie_title=picked_title, api_key=user_api_key)
+        poster_url = r_det.get('poster_url') or 'https://via.placeholder.com/300x450/1a1a2e/E50914?text=🎬'
+        rating = r_det.get('vote_average', '8.5')
+        release = str(r_det.get('release_date', ''))[:4]
+        overview = r_det.get('overview', 'A timeless cinematic masterpiece awaits you.')[:200]
+
+        gift_html = f"""
+<!DOCTYPE html><html><head><meta charset="UTF-8">
+<style>
+* {{ margin:0; padding:0; box-sizing:border-box; }}
+body {{ background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #0a1a2e 100%); min-height: 560px; overflow: hidden; font-family: 'Segoe UI', sans-serif; }}
+
+/* Stars background */
+#stars {{ position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; }}
+.star {{ position:absolute; background:white; border-radius:50%; animation: twinkle var(--d) ease-in-out infinite alternate; }}
+@keyframes twinkle {{ 0%{{opacity:0.2}} 100%{{opacity:0.9}} }}
+
+/* Main stage */
+#stage {{
+  display: flex; align-items: center; justify-content: center;
+  min-height: 560px; padding: 20px; gap: 40px; flex-wrap: wrap;
+  position: relative; z-index: 10;
+}}
+
+/* Gift Box Side */
+#gift-side {{
+  display: flex; flex-direction: column; align-items: center;
+  perspective: 1000px;
+}}
+
+/* Glow blob */
+.glow-blob {{
+  position:absolute; width:220px; height:220px;
+  background: radial-gradient(circle, rgba(229,9,20,0.5) 0%, rgba(245,158,11,0.3) 40%, transparent 70%);
+  border-radius:50%; animation: blobPulse 2s ease-in-out infinite alternate;
+  pointer-events:none;
+}}
+@keyframes blobPulse {{
+  from{{ transform:scale(0.85); opacity:0.6; }}
+  to  {{ transform:scale(1.15); opacity:1.0; }}
+}}
+
+/* 3D Gift wrapper */
+.gift-3d {{
+  position:relative; display:flex; flex-direction:column; align-items:center;
+  transform-style: preserve-3d;
+  animation: giftFloat 3s ease-in-out infinite;
+}}
+@keyframes giftFloat {{
+  0%,100%{{ transform: translateY(0) rotateY(-8deg) rotateX(5deg); }}
+  50%    {{ transform: translateY(-12px) rotateY(8deg) rotateX(-3deg); }}
+}}
+
+/* BOX LID */
+.lid {{
+  width:160px; height:44px; position:relative;
+  background: linear-gradient(135deg, #E50914 0%, #FF6B6B 50%, #FFB86C 100%);
+  border-radius: 8px 8px 0 0;
+  transform-origin: 50% 100%;
+  transform-style: preserve-3d;
+  animation: openLid 1.2s cubic-bezier(.68,-0.55,.27,1.55) 0.8s both;
+  box-shadow: 0 -6px 24px rgba(229,9,20,0.7), 0 -2px 6px rgba(0,0,0,0.4);
+  z-index:5;
+}}
+@keyframes openLid {{
+  0%  {{ transform: rotateX(0deg); }}
+  40% {{ transform: rotateX(-80deg) translateY(-8px); }}
+  100%{{ transform: rotateX(-115deg) translateY(-18px); }}
+}}
+.lid-ribbon {{
+  position:absolute; left:50%; transform:translateX(-50%);
+  width:22px; height:100%; background:rgba(255,255,255,0.4); border-radius:3px;
+}}
+.bow-emoji {{
+  position:absolute; top:-30px; left:50%; transform:translateX(-50%);
+  font-size:34px; line-height:1;
+  animation: bowFly 0.6s ease-in 1.6s both;
+}}
+@keyframes bowFly {{
+  0%  {{ opacity:1; transform: translateX(-50%) scale(1) translateY(0); }}
+  100%{{ opacity:0; transform: translateX(-50%) scale(0.3) translateY(-50px); }}
+}}
+
+/* BOX BODY */
+.body {{
+  width:160px; height:120px; position:relative;
+  background: linear-gradient(160deg, #b91c1c 0%, #7f1d1d 60%, #450a0a 100%);
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.7), inset 0 2px 8px rgba(255,255,255,0.1);
+  overflow:hidden;
+}}
+.body-ribbon {{
+  position:absolute; left:50%; transform:translateX(-50%);
+  width:22px; height:100%; background:rgba(255,255,255,0.18); 
+}}
+.body-shine {{
+  position:absolute; top:0; left:0; right:0; height:30px;
+  background:linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 100%);
+}}
+/* Golden light burst from box */
+.light-burst {{
+  position:absolute; top:-20px; left:50%; transform:translateX(-50%);
+  width:100px; height:80px;
+  background: radial-gradient(ellipse, #fbbf24 0%, #f59e0b 35%, transparent 70%);
+  border-radius:50%; opacity:0;
+  animation: burstLight 1s ease-out 1.5s both;
+}}
+@keyframes burstLight {{
+  0%  {{ opacity:0; transform:translateX(-50%) scaleY(0.3) scaleX(0.5); }}
+  50% {{ opacity:1; transform:translateX(-50%) scaleY(1.6) scaleX(1.2); }}
+  100%{{ opacity:0; transform:translateX(-50%) scaleY(1.0) scaleX(1.0); }}
+}}
+
+/* Reveal card (right side) */
+#reveal-side {{
+  width: 320px; position:relative;
+}}
+#reveal-card {{
+  opacity:0; transform:translateX(40px) scale(0.92);
+  animation: slideReveal 0.9s cubic-bezier(.34,1.56,.64,1) 2.0s forwards;
+  background: linear-gradient(135deg, rgba(15,15,35,0.97) 0%, rgba(45,10,70,0.97) 100%);
+  border: 1.5px solid rgba(245,158,11,0.8); border-radius:18px; overflow:hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(229,9,20,0.3), 0 0 60px rgba(245,158,11,0.15);
+}}
+@keyframes slideReveal {{
+  0%  {{ opacity:0; transform:translateX(40px) scale(0.92); }}
+  100%{{ opacity:1; transform:translateX(0) scale(1); }}
+}}
+.card-poster {{
+  width:100%; height:200px; object-fit:cover; display:block;
+  border-bottom: 2px solid rgba(245,158,11,0.4);
+}}
+.card-body {{ padding: 18px 20px; }}
+.reel-badge {{
+  display:inline-block;
+  background: linear-gradient(90deg, #E50914, #EC4899);
+  color:white; font-size:0.7rem; font-weight:800;
+  padding:3px 12px; border-radius:20px; margin-bottom:10px;
+  text-transform:uppercase; letter-spacing:1px;
+}}
+.rarity-badge {{
+  display:inline-block; margin-left:6px;
+  background: rgba(245,158,11,0.2); border:1px solid rgba(245,158,11,0.6);
+  color:#fde047; font-size:0.7rem; font-weight:700;
+  padding:3px 10px; border-radius:14px;
+}}
+.movie-title {{
+  font-size:1.45rem; font-weight:900; margin:8px 0 4px;
+  background: linear-gradient(90deg, #F59E0B 0%, #EC4899 50%, #ffffff 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  line-height:1.2;
+}}
+.archetype-text {{ font-size:0.82rem; color:#94a3b8; margin:2px 0 6px; }}
+.meta-row {{ display:flex; gap:8px; align-items:center; margin:8px 0; flex-wrap:wrap; }}
+.meta-chip {{
+  background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15);
+  color:#cbd5e1; font-size:0.75rem; padding:2px 8px; border-radius:8px;
+}}
+.overview-text {{
+  font-size:0.8rem; color:#94a3b8; line-height:1.5;
+  margin:6px 0; max-height:72px; overflow:hidden;
+  border-left:2px solid rgba(229,9,20,0.5); padding-left:10px;
+}}
+.quote-text {{
+  font-size:0.78rem; color:#fde047; font-style:italic; margin-top:8px;
+  padding:8px 10px;
+  background:rgba(245,158,11,0.08); border-radius:8px;
+  border:1px solid rgba(245,158,11,0.2);
+}}
+
+/* Confetti */
+.confetti-wrap {{ position:fixed; top:0;left:0;right:0;bottom:0; pointer-events:none; z-index:50; overflow:hidden; }}
+.c {{ position:absolute; width:8px; height:8px; border-radius:2px; opacity:0;
+      animation: cFall var(--dur) ease-out var(--del) both; }}
+@keyframes cFall {{
+  0%  {{ opacity:0; transform:translateY(60%) translateX(0) rotate(0deg) scale(0.5); }}
+  10% {{ opacity:1; }}
+  100%{{ opacity:0; transform:translateY(var(--ey)) translateX(var(--ex)) rotate(var(--r)) scale(1.1); }}
+}}
+</style></head><body>
+
+<div id="stars"></div>
+<div class="confetti-wrap" id="confetti"></div>
+
+<div id="stage">
+  <!-- Gift Box -->
+  <div id="gift-side">
+    <div class="glow-blob"></div>
+    <div class="gift-3d">
+      <div class="lid">
+        <div class="lid-ribbon"></div>
+        <div class="bow-emoji">🎀</div>
+      </div>
+      <div class="body">
+        <div class="body-ribbon"></div>
+        <div class="body-shine"></div>
+        <div class="light-burst"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Movie Reveal Card -->
+  <div id="reveal-side">
+    <div id="reveal-card">
+      <img class="card-poster" src="{poster_url}" onerror="this.src='https://via.placeholder.com/320x200/1a1a2e/E50914?text=🎬+Cinema'" />
+      <div class="card-body">
+        <span class="reel-badge">🎰 Mystery Reel #{spin_num}</span>
+        <span class="rarity-badge">{roulette_meta.get('rarity', 'Legendary ★★★★★')}</span>
+        <div class="movie-title">🎬 {picked_title}</div>
+        <div class="archetype-text">{roulette_meta.get('archetype', '')}</div>
+        <div class="meta-row">
+          <span class="meta-chip">★ {rating}</span>
+          <span class="meta-chip">🗓️ {release}</span>
+        </div>
+        <div class="overview-text">{overview}...</div>
+        <div class="quote-text">💬 "{roulette_meta.get('quote', 'A timeless cinematic journey.')}"</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Stars
+(function(){{
+  const s=document.getElementById('stars');
+  for(let i=0;i<80;i++){{
+    const d=document.createElement('div');
+    d.className='star';
+    const sz=(Math.random()*2+0.5)+'px';
+    d.style.cssText=`width:${{sz}};height:${{sz}};top:${{Math.random()*100}}%;left:${{Math.random()*100}}%;--d:${{(1.5+Math.random()*2.5).toFixed(1)}}s;animation-delay:${{(Math.random()*3).toFixed(1)}}s`;
+    s.appendChild(d);
+  }}
+}})();
+
+// Confetti
+(function(){{
+  const colors=['#E50914','#F59E0B','#EC4899','#8B5CF6','#22d3ee','#fde047','#fff','#4ade80'];
+  const wrap=document.getElementById('confetti');
+  for(let i=0;i<70;i++){{
+    const el=document.createElement('div');
+    el.className='c';
+    el.style.left=(15+Math.random()*70)+'%';
+    el.style.top=(40+Math.random()*20)+'%';
+    el.style.background=colors[i%colors.length];
+    if(Math.random()>0.5)el.style.borderRadius='50%';
+    el.style.setProperty('--ex',(Math.random()-0.5)*400+'px');
+    el.style.setProperty('--ey',(-(100+Math.random()*350))+'px');
+    el.style.setProperty('--r',(Math.random()-0.5)*1080+'deg');
+    el.style.setProperty('--dur',(0.9+Math.random()*1.2).toFixed(2)+'s');
+    el.style.setProperty('--del',(1.4+Math.random()*0.8).toFixed(2)+'s');
+    wrap.appendChild(el);
+  }}
+}})();
+</script>
+</body></html>
+"""
+        components.html(gift_html, height=580, scrolling=False)
+
+        st.markdown("---")
+        btn_c1, btn_c2, btn_c3 = st.columns([2, 2, 2])
+        with btn_c1:
+            if st.button("🎲 Spin Again — New Mystery Film", key="roulette_spin_again_top", type="primary", use_container_width=True):
+                valid_vault = [v for v in ROULETTE_VAULT if v['title'] in all_titles] or [{"title": random.choice(all_titles), "archetype": "🎬 Pure Cinema Discovery", "rarity": "Wild Pick 🎲", "quote": "A hidden gem waiting for your discovery."}]
+                diff_vault = [v for v in valid_vault if v['title'] != picked_title] or valid_vault
+                next_picked = random.choice(diff_vault)
+                st.session_state.selected_movie_title = next_picked['title']
+                st.session_state.surprise_roulette = next_picked
+                st.session_state.roulette_spin_count = spin_num + 1
+                st.session_state.has_run = True
+                st.rerun()
+        with btn_c2:
+            if st.button("🔎 Explore Full Recommendations", key="roulette_explore_top", use_container_width=True):
+                st.session_state.selected_movie_title = picked_title
+                st.session_state.surprise_roulette = None
+                st.session_state.has_run = True
+                st.rerun()
+        with btn_c3:
+            if st.button("✖ Exit Roulette Mode", key="roulette_exit_top", use_container_width=True):
+                st.session_state.surprise_roulette = None
+                st.rerun()
+
+        st.stop()  # Stop rendering rest of the page — roulette is the full experience
+
     # Quick Visual Mood Grid
     st.markdown("#### 🎭 What's Your Mood?")
     mood_list = [

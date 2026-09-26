@@ -1740,43 +1740,7 @@ elif app_mode == "🎬 Recommender & Discovery" or app_mode == "🔍 Movie Disco
     if 'selected_global_movie_data' not in st.session_state:
         st.session_state.selected_global_movie_data = None
 
-    # ---------------------------------------------------------
-    # Quick Action Discovery Bar ("What do you want?")
-    # ---------------------------------------------------------
-    st.markdown("#### ⚡ What do you want to explore?")
-    q_col1, q_col2, q_col3, q_col4, q_col5 = st.columns(5)
-    with q_col1:
-        if st.button("🎭 Mood Mode", use_container_width=True):
-            st.session_state.app_nav_mode = "🎭 Mood Mode"
-            st.session_state.active_mood_mode = "😊 Happy"
-            st.session_state.active_internal_mood = "😄 Happy & Uplifting"
-            st.rerun()
-    with q_col2:
-        if st.button("🔥 Trending Worldwide", use_container_width=True):
-            st.session_state.discovery_search_mode = "🔥 Trending Worldwide"
-            st.session_state.has_run = True
-            st.rerun()
-    with q_col3:
-        if st.button("💎 Hidden Gems", use_container_width=True):
-            st.session_state.discovery_search_mode = "💎 Hidden Gems"
-            st.session_state.has_run = True
-            st.rerun()
-    with q_col4:
-        if st.button("🎲 Surprise Me", use_container_width=True):
-            random_title = random.choice(all_titles)
-            st.session_state.selected_movie_title = random_title
-            st.session_state.selected_global_movie_data = None
-            st.session_state.discovery_search_mode = "🎬 Global & Indian Cinema (56,000+)"
-            st.session_state.has_run = True
-            st.toast(f"Surprise Pick: {random_title}!")
-            st.rerun()
-    with q_col5:
-        if st.button("🌐 Worldwide TMDB", use_container_width=True):
-            st.session_state.discovery_search_mode = "🌐 Search Any Worldwide Movie (TMDB)"
-            st.session_state.has_run = True
-            st.rerun()
-
-    # Search Mode Selector
+    # Discovery Catalog Source Selector
     search_mode = st.radio(
         "Discovery Catalog Source:",
         ["🎬 Global & Indian Cinema (56,000+)", "🌐 Search Any Worldwide Movie (TMDB)", "🔥 Trending Worldwide", "💎 Hidden Gems"],

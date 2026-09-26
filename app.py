@@ -1003,6 +1003,26 @@ GENRE_MAP = {
     "Fantasy": ["fantasy", "magic", "mythology", "superhero", "dragon", "wizard"]
 }
 
+ROULETTE_VAULT = [
+    {"title": "Interstellar", "archetype": "🌌 Cosmic Odyssey & Philosophical Depth", "rarity": "Legendary ★★★★★", "quote": "Love is the one thing that transcends dimensions of time and space."},
+    {"title": "Inception", "archetype": "🧠 Mind-Bending Dream Architecture", "rarity": "Legendary ★★★★★", "quote": "An idea is like a virus, resilient, highly contagious."},
+    {"title": "The Dark Knight", "archetype": "⚡ High-Octane Moral Masterpiece", "rarity": "Iconic ★★★★★", "quote": "Why so serious? A towering standard in cinematic tension."},
+    {"title": "Parasite", "archetype": "🎭 Social Satire & Tension Masterclass", "rarity": "Oscar Titan ★★★★★", "quote": "You know what kind of plan never fails? No plan at all."},
+    {"title": "Whiplash", "archetype": "🥁 Relentless Passion & Perfectionism", "rarity": "Masterpiece ★★★★★", "quote": "There are no two words in the English language more harmful than good job."},
+    {"title": "Spirited Away", "archetype": "🏮 Enchanted Folklore & Imagination", "rarity": "Anime Pinnacle ★★★★★", "quote": "Once you meet someone, you never really forget them."},
+    {"title": "The Prestige", "archetype": "🎩 Dark Magic & Obsessive Rivalry", "rarity": "Mind-Blower ★★★★★", "quote": "Are you watching closely? The secret impresses no one."},
+    {"title": "Kantara", "archetype": "🔥 Mystical Folklore & Raw Divine Power", "rarity": "Cultural Phenomenon ★★★★★", "quote": "A fierce confluence of native spirit and divine retribution."},
+    {"title": "3 Idiots", "archetype": "🎓 Heartwarming Wisdom & Lifelong Friendship", "rarity": "All-Time Great ★★★★★", "quote": "Pursue excellence, and success will follow, pants down."},
+    {"title": "Gladiator", "archetype": "⚔️ Epic Vengeance & Honor", "rarity": "Epic Masterpiece ★★★★★", "quote": "What we do in life echoes in eternity."},
+    {"title": "Coco", "archetype": "🎸 Family, Memory & The Afterlife", "rarity": "Heart-Melter ★★★★★", "quote": "Remember me, though I have to say goodbye."},
+    {"title": "Snatch", "archetype": "💎 Fast-Paced Diamond Heist Mayhem", "rarity": "Cult Classic ★★★★★", "quote": "Heavy is good, heavy is reliable."},
+    {"title": "Fight Club", "archetype": "👊 Anarchic Psychological Cult", "rarity": "Cult Classic ★★★★★", "quote": "The first rule of Fight Club is: you do not talk about Fight Club."},
+    {"title": "KGF Chapter 2", "archetype": "👑 Unstoppable Mass Spectacle", "rarity": "Box-Office Juggernaut ★★★★★", "quote": "Violence, violence, violence... I don't like it. I avoid. But violence likes me!"},
+    {"title": "Tumbbad", "archetype": "🗝️ Mythological Greed & Atmospheric Horror", "rarity": "Hidden Masterpiece ★★★★★", "quote": "Hastinapur's curse of insatiable human greed."},
+    {"title": "Dangal", "archetype": "🏅 Grit, Determination & Heritage", "rarity": "National Treasure ★★★★★", "quote": "Gold medals don't grow on trees; you have to cultivate them."},
+    {"title": "Ulidavaru Kandanthe", "archetype": "🌊 Rashomon-Style Coastal Mystery", "rarity": "Kannada Landmark ★★★★★", "quote": "Multiple perspectives weave the ultimate coastal tapestry."}
+]
+
 def clean_genres(g_str):
     s = str(g_str).lower().replace('science fiction', 'scifi').replace('sci-fi', 'scifi').replace('romantic comedy', 'romance comedy')
     words = re.findall(r'[a-zA-Z]+', s)
@@ -1766,16 +1786,36 @@ elif app_mode == "🎬 Recommender & Discovery" or app_mode == "🔍 Movie Disco
             st.session_state.has_run = True
             st.rerun()
     with q_col4:
-        if st.button("🎲 Surprise Me", key="quick_act_surprise", use_container_width=True):
-            curated_picks = ["Inception", "Interstellar", "The Dark Knight", "Parasite", "Whiplash", "Spirited Away", "KGF Chapter 2", "Kantara", "3 Idiots", "The Prestige", "Gladiator", "Coco", "Django Unchained"]
-            pool = [m for m in curated_picks if m in all_titles] or all_titles
-            random_title = random.choice(pool)
-            st.session_state.selected_movie_title = random_title
+        if st.button("🎲 Surprise Me (Roulette)", key="quick_act_surprise", use_container_width=True, help="Spin the CineMatch Cinema Roulette & unlock a mystery masterpiece!"):
+            roulette_vault = [
+                {"title": "Interstellar", "archetype": "🌌 Cosmic Odyssey & Philosophical Depth", "rarity": "Legendary ★★★★★", "quote": "Love is the one thing that transcends dimensions of time and space."},
+                {"title": "Inception", "archetype": "🧠 Mind-Bending Dream Architecture", "rarity": "Legendary ★★★★★", "quote": "An idea is like a virus, resilient, highly contagious."},
+                {"title": "The Dark Knight", "archetype": "⚡ High-Octane Moral Masterpiece", "rarity": "Iconic ★★★★★", "quote": "Why so serious? A towering standard in cinematic tension."},
+                {"title": "Parasite", "archetype": "🎭 Social Satire & Tension Masterclass", "rarity": "Oscar Titan ★★★★★", "quote": "You know what kind of plan never fails? No plan at all."},
+                {"title": "Whiplash", "archetype": "🥁 Relentless Passion & Perfectionism", "rarity": "Masterpiece ★★★★★", "quote": "There are no two words in the English language more harmful than good job."},
+                {"title": "Spirited Away", "archetype": "🏮 Enchanted Folklore & Imagination", "rarity": "Anime Pinnacle ★★★★★", "quote": "Once you meet someone, you never really forget them."},
+                {"title": "The Prestige", "archetype": "🎩 Dark Magic & Obsessive Rivalry", "rarity": "Mind-Blower ★★★★★", "quote": "Are you watching closely? The secret impresses no one."},
+                {"title": "Kantara", "archetype": "🔥 Mystical Folklore & Raw Divine Power", "rarity": "Cultural Phenomenon ★★★★★", "quote": "A fierce confluence of native spirit and divine retribution."},
+                {"title": "3 Idiots", "archetype": "🎓 Heartwarming Wisdom & Lifelong Friendship", "rarity": "All-Time Great ★★★★★", "quote": "Pursue excellence, and success will follow, pants down."},
+                {"title": "Gladiator", "archetype": "⚔️ Epic Vengeance & Honor", "rarity": "Epic Masterpiece ★★★★★", "quote": "What we do in life echoes in eternity."},
+                {"title": "Coco", "archetype": "🎸 Family, Memory & The Afterlife", "rarity": "Heart-Melter ★★★★★", "quote": "Remember me, though I have to say goodbye."},
+                {"title": "Snatch", "archetype": "💎 Fast-Paced Diamond Heist Mayhem", "rarity": "Cult Classic ★★★★★", "quote": "Heavy is good, heavy is reliable."},
+                {"title": "Fight Club", "archetype": "👊 Anarchic Psychological Cult", "rarity": "Cult Classic ★★★★★", "quote": "The first rule of Fight Club is: you do not talk about Fight Club."},
+                {"title": "KGF Chapter 2", "archetype": "👑 Unstoppable Mass Spectacle", "rarity": "Box-Office Juggernaut ★★★★★", "quote": "Violence, violence, violence... I don't like it. I avoid. But violence likes me!"},
+                {"title": "Tumbbad", "archetype": "🗝️ Mythological Greed & Atmospheric Horror", "rarity": "Hidden Masterpiece ★★★★★", "quote": "Hastinapur's curse of insatiable human greed."},
+                {"title": "Dangal", "archetype": "🏅 Grit, Determination & Heritage", "rarity": "National Treasure ★★★★★", "quote": "Gold medals don't grow on trees; you have to cultivate them."},
+                {"title": "Ulidavaru Kandanthe", "archetype": "🌊 Rashomon-Style Coastal Mystery", "rarity": "Kannada Landmark ★★★★★", "quote": "Multiple perspectives weave the ultimate coastal tapestry."}
+            ]
+            valid_vault = [v for v in roulette_vault if v['title'] in all_titles] or [{"title": random.choice(all_titles), "archetype": "🎬 Pure Cinema Discovery", "rarity": "Wild Pick 🎲", "quote": "A hidden gem waiting for your discovery."}]
+            picked = random.choice(valid_vault)
+            st.session_state.selected_movie_title = picked['title']
+            st.session_state.surprise_roulette = picked
             st.session_state.selected_global_movie_data = None
             st.session_state.discovery_catalog_radio_key = "🎬 Global & Indian Cinema (56,000+)"
             st.session_state.discovery_search_mode = "🎬 Global & Indian Cinema (56,000+)"
             st.session_state.has_run = True
-            st.toast(f"🎲 Surprise Pick: {random_title}!")
+            st.session_state.roulette_spin_count = st.session_state.get('roulette_spin_count', 0) + 1
+            st.toast(f"🎰 Cinema Roulette Unlocked: {picked['title']}!")
             st.rerun()
     with q_col5:
         if st.button("🌐 Worldwide TMDB", key="quick_act_tmdb", use_container_width=True):
@@ -1995,6 +2035,35 @@ elif app_mode == "🎬 Recommender & Discovery" or app_mode == "🔍 Movie Disco
             l_val = str(matched_row.get('original_language', 'en')).upper()
             lang_label = f"🗣️ {l_val}"
             selected_movie = matched_row.title
+
+        # Cinema Roulette Celebration Banner (if active)
+        if st.session_state.get('surprise_roulette') and st.session_state.surprise_roulette.get('title') == selected_movie:
+            roulette_meta = st.session_state.surprise_roulette
+            spin_num = st.session_state.get('roulette_spin_count', 1)
+            
+            st.markdown(f"""
+            <div style="background: linear-gradient(135deg, rgba(229, 9, 20, 0.25) 0%, rgba(147, 51, 234, 0.28) 50%, rgba(245, 158, 11, 0.25) 100%); border: 1px solid rgba(245, 158, 11, 0.65); border-radius: 14px; padding: 18px 24px; margin-bottom: 20px; box-shadow: 0 8px 32px rgba(229, 9, 20, 0.3);">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                    <div>
+                        <span style="background: linear-gradient(90deg, #F59E0B, #EC4899); color: white; font-weight: 800; font-size: 0.78rem; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px;">🎰 Mystery Vault Reel #{spin_num} Unlocked</span>
+                        <span style="background: rgba(255, 255, 255, 0.15); color: #fde047; font-size: 0.8rem; font-weight: 700; padding: 3px 10px; border-radius: 14px; margin-left: 8px;">{roulette_meta.get('rarity', 'Legendary ★★★★★')}</span>
+                        <h2 style="color: white; margin: 8px 0 4px 0; font-size: 1.6rem;">🎲 Mystery Masterpiece: <b>{selected_movie}</b></h2>
+                        <p style="color: #cbd5e1; margin: 0; font-size: 0.95rem;">🏷️ <b>Archetype:</b> {roulette_meta.get('archetype', 'Cinema Wonder')} • 💬 <i>"{roulette_meta.get('quote', 'A timeless cinematic journey.')}"</i></p>
+                    </div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            r_c1, _ = st.columns([2, 4])
+            with r_c1:
+                if st.button("🎲 Spin Again (Roll Next Mystery Film)", key="roulette_re_spin", type="primary", use_container_width=True):
+                    valid_vault = [v for v in ROULETTE_VAULT if v['title'] in all_titles] or [{"title": random.choice(all_titles), "archetype": "🎬 Pure Cinema Discovery", "rarity": "Wild Pick 🎲", "quote": "A hidden gem waiting for your discovery."}]
+                    diff_vault = [v for v in valid_vault if v['title'] != selected_movie] or valid_vault
+                    next_picked = random.choice(diff_vault)
+                    st.session_state.selected_movie_title = next_picked['title']
+                    st.session_state.surprise_roulette = next_picked
+                    st.session_state.roulette_spin_count = spin_num + 1
+                    st.rerun()
 
         backdrop_style = f"background-image: url('{sel_details['backdrop_url']}');" if sel_details.get('backdrop_url') else "background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);"
         

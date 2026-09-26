@@ -997,6 +997,10 @@ GENRE_MAP = {
     "Fantasy": ["fantasy", "magic", "mythology", "superhero", "dragon", "wizard"]
 }
 
+def clean_genres(g_str):
+    s = str(g_str).lower().replace('science fiction', 'scifi').replace('sci-fi', 'scifi').replace('romantic comedy', 'romance comedy')
+    words = re.findall(r'[a-zA-Z]+', s)
+    return [w for w in words if len(w) > 2]
 
 def calculate_movie_dna(tags_str: str):
     tags_lower = str(tags_str).lower()
@@ -1196,12 +1200,30 @@ def get_advanced_hybrid_recommendations(selected_title: str, username: str, top_
                 0.10 * quality_score
             )
 
+        # 🌟 Golden Multipliers (Director / Cast / Franchise precision boosts)
+        sel_row = matched.iloc[0]
+        sel_dir = str(sel_row.get('director', '')).strip().lower()
+        cand_dir = str(row.get('director', '')).strip().lower()
+        if sel_dir and cand_dir and len(sel_dir) > 3 and sel_dir in cand_dir:
+            final_score *= 1.25
+
+        sel_cast = set([c.strip().lower() for c in str(sel_row.get('cast', '')).split(',') if len(c.strip()) > 3])
+        cand_cast = set([c.strip().lower() for c in str(row.get('cast', '')).split(',') if len(c.strip()) > 3])
+        if sel_cast and cand_cast and sel_cast.intersection(cand_cast):
+            final_score *= 1.15
+
+        # Anti-Noise Relevance Gate: penalize candidate if 0 genre overlap and 0 director/cast overlap
+        sel_genres_set = set(clean_genres(sel_row.get('genres', '')))
+        cand_genres_set = set(clean_genres(row.get('genres', '')))
+        if sel_genres_set and cand_genres_set and not sel_genres_set.intersection(cand_genres_set) and graph_score < 0.2:
+            final_score *= 0.65
+
         # Apply emotion bonus if user specified emotion
         if emotion_bonus > 0:
             final_score += emotion_bonus * 0.05
 
-        # Display Calibrated Match Percentage (70% - 99.4%)
-        display_score = round(min(max(final_score * 135.0 + 28.0, 72.0), 99.4), 1)
+        # Display Calibrated Match Percentage (75% - 99.8%)
+        display_score = round(min(max(final_score * 140.0 + 25.0, 75.0), 99.8), 1)
 
         words = movie_tags.split()
         shared_keywords = [w for w in set(words) if w in selected_tags and len(w) > 4][:3]

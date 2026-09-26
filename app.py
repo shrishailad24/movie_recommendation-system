@@ -1331,6 +1331,11 @@ with st.sidebar:
         "👤 My Taste DNA & Badges",
         "🏆 Portfolio & ML Pipeline"
     ]
+    if "pending_nav" in st.session_state and st.session_state.pending_nav:
+        st.session_state.app_nav_mode = st.session_state.pending_nav
+        st.session_state.app_nav_radio_key = st.session_state.pending_nav
+        st.session_state.pending_nav = None
+
     if "app_nav_mode" not in st.session_state:
         st.session_state.app_nav_mode = "🏠 Home (Personalized Feed)"
 
@@ -1463,7 +1468,7 @@ if app_mode == "🏠 Home (Personalized Feed)":
                     with hb3:
                         if st.button("⚡", key=f"h_act_exp_{h_idx}", use_container_width=True, help="Explore in Discovery & DNA"):
                             st.session_state.selected_movie_title = h_m_title
-                            st.session_state.app_nav_mode = "🔎 Discover & DNA"
+                            st.session_state.pending_nav = "🔎 Discover & DNA"
                             st.session_state.has_run = True
                             st.rerun()
                     st.markdown('</div>', unsafe_allow_html=True)
@@ -1500,7 +1505,7 @@ if app_mode == "🏠 Home (Personalized Feed)":
             with tb3:
                 if st.button("⚡", key=f"h_trend_exp_{t_idx}", use_container_width=True, help=f"Explore movies like {t_title}"):
                     st.session_state.selected_movie_title = t_title
-                    st.session_state.app_nav_mode = "🔎 Discover & DNA"
+                    st.session_state.pending_nav = "🔎 Discover & DNA"
                     st.session_state.has_run = True
                     st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
@@ -1744,8 +1749,7 @@ elif app_mode == "🎬 Recommender & Discovery" or app_mode == "🔍 Movie Disco
     q_col1, q_col2, q_col3, q_col4, q_col5 = st.columns(5)
     with q_col1:
         if st.button("🎭 Mood Mode", key="quick_act_mood", use_container_width=True):
-            st.session_state.app_nav_radio_key = "🎭 Mood Mode"
-            st.session_state.app_nav_mode = "🎭 Mood Mode"
+            st.session_state.pending_nav = "🎭 Mood Mode"
             st.session_state.active_mood_mode = "😊 Happy"
             st.session_state.active_internal_mood = "😄 Happy & Uplifting"
             st.rerun()
@@ -2741,7 +2745,7 @@ elif app_mode == "🎭 Mood Mode":
             with b3:
                 if st.button("⚡ Explore", key=f"mood_exp_{m_id}_{idx}", use_container_width=True, help=f"Explore recommendations like {m_title}"):
                     st.session_state.selected_movie_title = m_title
-                    st.session_state.app_nav_mode = "🔎 Discover & DNA"
+                    st.session_state.pending_nav = "🔎 Discover & DNA"
                     st.session_state.has_run = True
                     st.rerun()
             st.markdown("<br>", unsafe_allow_html=True)
